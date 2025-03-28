@@ -1,0 +1,46 @@
+# Ignore unnecessary files inside frontEnd & backEnd
+frontEnd/node_modules/
+frontEnd/dist/
+frontEnd/build/
+frontEnd/.env
+frontEnd/.env.*
+!frontEnd/.env.example  # Keep example env file
+
+backEnd/node_modules/
+backEnd/dist/
+backEnd/build/
+backEnd/.env
+backEnd/.env.*
+!backEnd/.env.example  # Keep example env file
+
+
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+
+.env
+.env.*
+!.env.example  # Keeps example file
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
