@@ -3,14 +3,12 @@ frontEnd/node_modules/
 frontEnd/dist/
 frontEnd/build/
 frontEnd/.env
-frontEnd/.env.*
 !frontEnd/.env.example  # Keep example env file
 
 backEnd/node_modules/
 backEnd/dist/
 backEnd/build/
 backEnd/.env
-backEnd/.env.*
 !backEnd/.env.example  # Keep example env file
 
 
