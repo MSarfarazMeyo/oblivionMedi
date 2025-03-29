@@ -1,4 +1,16 @@
-import React, { useState, FormEvent, useEffect } from 'react';
+import React, { useState, FormEvent, useEffect, useRef } from 'react';
+
+// Add proper TypeScript declarations
+declare global {
+    interface Window {
+        grecaptcha: {
+            ready: (callback: () => void) => void;
+            render: (container: string | HTMLElement, options: any) => number;
+            execute: (siteKey: string, options: any) => Promise<string>;
+            reset: (widgetId?: number) => void;
+        };
+    }
+}
 
 interface FormData {
     email: string;
@@ -9,6 +21,8 @@ interface FormData {
 
 const ContactPage: React.FC = () => {
     const API_URL = import.meta.env.VITE_API_URL;
+    const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI';
+
     const [formData, setFormData] = useState<FormData>({
         email: '',
         product: '',
@@ -17,12 +31,34 @@ const ContactPage: React.FC = () => {
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
-
-
+    const [submitSuccess, setSubmitSuccess] = useState<string | null>(null);
     const [clientIp, setClientIp] = useState<string>('');
+    const [recaptchaToken, setRecaptchaToken] = useState<string>('');
+    const recaptchaRef = useRef<number | null>(null);
+    const recaptchaInitialized = useRef<boolean>(false);
 
-    console.log("clientIp", clientIp);
 
+    useEffect(() => {
+        if (!recaptchaInitialized.current && window.grecaptcha && !recaptchaRef.current) {
+            recaptchaInitialized.current = true;
+
+            window.grecaptcha.ready(() => {
+                // Make sure the container exists and hasn't been rendered yet
+                const container = document.getElementById('recaptcha-container');
+                if (container && !container.hasChildNodes()) {
+                    recaptchaRef.current = window.grecaptcha.render('recaptcha-container', {
+                        'sitekey': RECAPTCHA_SITE_KEY,
+                        'callback': (token: string) => {
+                            setRecaptchaToken(token);
+                        },
+                        'expired-callback': () => {
+                            setRecaptchaToken('');
+                        }
+                    });
+                }
+            });
+        }
+    }, []);
 
     useEffect(() => {
         const fetchIp = async () => {
@@ -44,17 +80,32 @@ const ContactPage: React.FC = () => {
             ...prev,
             [id]: value
         }));
+
+        // Clear messages when user starts typing again
+        setSubmitError(null);
+        setSubmitSuccess(null);
     };
 
-    const submitForm = async (data: FormData) => {
+    const submitForm = async () => {
+        // Make sure we have a recaptcha token
+        if (!recaptchaToken) {
+            setSubmitError('Please complete the reCAPTCHA verification');
+            return;
+        }
+
         setIsSubmitting(true);
         setSubmitError(null);
+        setSubmitSuccess(null);
 
         try {
             const response = await fetch(`${API_URL}/api/email/send`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...formData, ip: clientIp })
+                body: JSON.stringify({
+                    ...formData,
+                    ip: clientIp,
+                    recaptchaToken: recaptchaToken
+                })
             });
 
             if (!response.ok) {
@@ -62,7 +113,9 @@ const ContactPage: React.FC = () => {
                 throw new Error(errorData.message || 'Failed to send message');
             }
 
-            alert('Message sent successfully!');
+            // Set success message instead of alert
+            setSubmitSuccess('Message sent successfully! We will get back to you soon.');
+
             // Reset form after successful submission
             setFormData({
                 email: '',
@@ -70,11 +123,16 @@ const ContactPage: React.FC = () => {
                 name: '',
                 message: ''
             });
+
+            // Reset recaptcha
+            if (recaptchaRef.current && window.grecaptcha) {
+                window.grecaptcha.reset(recaptchaRef.current);
+                setRecaptchaToken('');
+            }
         } catch (error) {
             console.error('Submission error:', error);
             const errorMessage = error instanceof Error ? error.message : 'Error sending message';
             setSubmitError(errorMessage);
-            alert(errorMessage);
         } finally {
             setIsSubmitting(false);
         }
@@ -82,14 +140,13 @@ const ContactPage: React.FC = () => {
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
-        submitForm(formData);
+        submitForm();
     };
 
     return (
         <div className="min-h-screen bg-white flex justify-center px-4 py-8 font-[500] text-[14px] leading-[22px] text-black/70 tracking-[0px]">
             <div className="w-full max-w-xl">
-
-
+                {/* Header section remains the same */}
                 <header className="mb-6">
                     <h1
                         style={{ fontFamily: 'Wix Madefor Display' }}
@@ -105,6 +162,7 @@ const ContactPage: React.FC = () => {
                 </header>
 
                 <form onSubmit={handleSubmit} className="space-y-6 ">
+                    {/* Form fields remain the same */}
                     <div>
                         <label htmlFor="email" className="block  text-[#1E0E62] uppercase mb-1 lg:mb-2 font-[700] text-[14px] leading-[26px]  tracking-[2px]">
                             EMAIL ADDRESS
@@ -121,12 +179,9 @@ const ContactPage: React.FC = () => {
                     </div>
 
                     <div>
-
-
                         <label htmlFor="product" className="block  text-[#1E0E62] uppercase mb-1 lg:mb-2 font-[700] text-[14px] leading-[26px]  tracking-[2px]">
                             PRODUCT
                         </label>
-
                         <select
                             id="product"
                             value={formData.product}
@@ -142,7 +197,6 @@ const ContactPage: React.FC = () => {
                     </div>
 
                     <div>
-
                         <label htmlFor="name" className="block  text-[#1E0E62] uppercase mb-1 lg:mb-2 font-[700] text-[14px] leading-[26px]  tracking-[2px]">
                             YOUR NAME
                         </label>
@@ -158,12 +212,9 @@ const ContactPage: React.FC = () => {
                     </div>
 
                     <div>
-
-
-                        <label htmlFor="name" className="block  text-[#1E0E62] uppercase mb-1 lg:mb-2 font-[700] text-[14px] leading-[26px]  tracking-[2px]">
+                        <label htmlFor="message" className="block  text-[#1E0E62] uppercase mb-1 lg:mb-2 font-[700] text-[14px] leading-[26px]  tracking-[2px]">
                             YOUR MESSAGE
                         </label>
-
                         <textarea
                             id="message"
                             value={formData.message}
@@ -175,17 +226,25 @@ const ContactPage: React.FC = () => {
                         />
                     </div>
 
+                    <div id="recaptcha-container" className="flex "></div>
+
                     {submitError && (
                         <div className="text-red-500 text-sm text-center">
                             {submitError}
                         </div>
                     )}
 
+                    {submitSuccess && (
+                        <div className="text-green-500 text-sm text-center">
+                            {submitSuccess}
+                        </div>
+                    )}
+
                     <div className='mx-auto w-full flex justify-center'>
                         <button
                             type="submit"
-                            disabled={isSubmitting}
-                            className={`w-full lg:w-[120px] bg-[#B50B90] text-white py-4 rounded-full hover:bg-purple-700 transition-colors focus:outline-none focus:ring-2 cursor-pointer focus:ring-[#1E0E62]/10 ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+                            disabled={isSubmitting || !recaptchaToken}
+                            className={`w-full lg:w-[120px] bg-[#B50B90] text-white py-4 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#1E0E62]/10 ${isSubmitting || !recaptchaToken ? 'opacity-70 cursor-not-allowed' : 'hover:bg-purple-700'}`}
                         >
                             {isSubmitting ? 'Sending...' : 'Send'}
                         </button>

@@ -6,6 +6,11 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [react(), tailwindcss(),],
 
+  build: {
+    outDir: '../backEnd/build', // ✅ Generates build in root/build/
+    emptyOutDir: true,  // ✅ Clears old files before building
+  },
+
   server: {
     host: '0.0.0.0', // Allow external connections
     port: 5173, // Ensure it's the same port as ngrok

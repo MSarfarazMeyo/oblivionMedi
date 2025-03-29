@@ -1,7 +1,6 @@
 # Ignore unnecessary files inside frontEnd & backEnd
 frontEnd/node_modules/
 frontEnd/dist/
-frontEnd/build/
 frontEnd/.env
 
 backEnd/node_modules/

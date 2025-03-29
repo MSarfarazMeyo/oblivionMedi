@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FiMenu } from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 interface NavbarProps {
     setPage: React.Dispatch<React.SetStateAction<string | undefined>>
@@ -10,6 +10,23 @@ interface NavbarProps {
 const Navbar: React.FC<NavbarProps> = ({ setPage, page }) => {
     const navigate = useNavigate();
     const [menuOpen, setMenuOpen] = useState(false);
+
+    const location = useLocation();
+
+
+
+    useEffect(() => {
+        const path = location.pathname.replace("/", "");
+        if (path === 'about' || path === 'products' || path === 'services') {
+            const section = document.getElementById(path);
+
+            if (section) {
+                section.scrollIntoView({ behavior: "smooth" });
+            }
+        }
+
+
+    }, [location]);
 
     const handleNavigation = (path: string, id?: string) => {
         setMenuOpen(false)
@@ -54,7 +71,7 @@ const Navbar: React.FC<NavbarProps> = ({ setPage, page }) => {
                 <button onClick={() => {
                     setMenuOpen(false)
 
-                    setPage('contact')
+                    setPage('contactUs')
                 }} className="cursor-pointer">Contact</button>
             </div>
 
@@ -69,7 +86,7 @@ const Navbar: React.FC<NavbarProps> = ({ setPage, page }) => {
                     <button onClick={() => {
                         setMenuOpen(false)
 
-                        setPage('contact')
+                        setPage('contactUs')
                     }} className="cursor-pointer">Contact</button>
                 </div>
             )}

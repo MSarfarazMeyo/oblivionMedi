@@ -82,7 +82,7 @@ const ProductsSection: React.FC<compProps> = ({ setPage }) => {
                         {/* Contact Button */}
                         <div className="flex lg:justify-start justify-center">
                             <button
-                                onClick={() => setPage('contact')}
+                                onClick={() => setPage('contactUs')}
                                 className="bg-white text-[#1E0E62] border-2 border-[#EBEAED] hover:bg-[#2563eb] hover:text-white font-semibold py-3 px-4 rounded-full transition-all duration-300 w-[140px]   text-[18px] leading-[26px]  font-medium text-[#1E0E62"
                             >
                                 {product.cta}

@@ -35,17 +35,17 @@ const Footer: React.FC<FooterProps> = ({ setPage, page }) => {
                     <div className="flex flex-col  lg:flex-row space-x-6 lg:space-x-2 mb-4 sm:mb-0  gap-2  lg:gap-0">
                         <button onClick={() => {
 
-                            setPage("privacy")
+                            setPage("privacyPloicy")
                         }} className="hover:underline text-[#151439]/40 min-w-[104px] text-sm leading-[26px] text-[16px] text-center w-full">
                             Privacy Policy
                         </button>
 
 
 
-                        <button onClick={() => setPage("terms")} className="hover:underline min-w-[175px] text-[#151439]/40  text-sm leading-[26px] text-[16px] text-center w-full">
+                        <button onClick={() => setPage("terms&conditions")} className="hover:underline min-w-[175px] text-[#151439]/40  text-sm leading-[26px] text-[16px] text-center w-full">
                             Terms & Conditions
                         </button>
-                        <button onClick={() => setPage("contact")} className="hover:underline min-w-[80px] text-[#151439]/40  text-sm leading-[26px] text-[16px] text-center w-full">
+                        <button onClick={() => setPage("contactUs")} className="hover:underline min-w-[80px] text-[#151439]/40  text-sm leading-[26px] text-[16px] text-center w-full">
                             Contact Us
                         </button>
 

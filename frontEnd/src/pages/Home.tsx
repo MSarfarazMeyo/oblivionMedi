@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import ContactPage from "./Contact";
 import TermsPage from "./Terms";
 import PrivacyPage from "./Privacy";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Navbar from "../sections/Navbar";
 
 
@@ -17,6 +17,23 @@ import Navbar from "../sections/Navbar";
 const Home = () => {
     const [page, setPage] = useState<string | undefined>();
     const navigate = useNavigate();
+    const location = useLocation();
+
+
+
+    useEffect(() => {
+        const path = location.pathname.replace("/", "");
+        if (path === 'contactUs' || path === 'terms&conditions' || path === 'privacyPloicy') {
+            setPage(path || undefined);
+        }
+
+        else {
+            setPage(undefined);
+        }
+
+    }, [location]);
+
+
 
 
     useEffect(() => {
@@ -40,16 +57,16 @@ const Home = () => {
 
 
 
-            {page === "contact" && <ContactPage />}
-            {page === "terms" && <TermsPage />}
-            {page === "privacy" && <PrivacyPage />}
+            {page === "contactUs" && <ContactPage />}
+            {page === "terms&conditions" && <TermsPage />}
+            {page === "privacyPloicy" && <PrivacyPage />}
 
 
 
             {!page && <div id="about"><About /></div>
             }           {!page && <div id="services"><Services /></div>}
             {!page && <div id="products"><ProductsSection setPage={setPage} /></div>}
-            <div id="contact"><Footer setPage={setPage} page={page} /></div>
+            <div ><Footer setPage={setPage} page={page} /></div>
         </div>
     );
 };
