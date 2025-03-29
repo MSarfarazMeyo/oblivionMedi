@@ -54,9 +54,32 @@ const Footer: React.FC<FooterProps> = ({ setPage, page }) => {
 
                     {/* Right - Social Icons */}
                     <div className="flex space-x-4 py-2">
-                        <a href="#" className="hover:text-gray-700"><FaTwitter size={20} color="#151439" style={{ opacity: .4 }} /></a>
-                        <a href="#" className="hover:text-gray-700"><FaSquareFacebook size={20} color="#151439" style={{ opacity: .4 }} /></a>
-                        <a href="#" className="hover:text-gray-700"><FaGooglePlusG size={24} color="#151439" style={{ opacity: .4 }} /></a>
+                        <a
+                            href="https://twitter.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-gray-700"
+                        >
+                            <FaTwitter size={20} color="#151439" style={{ opacity: 0.4 }} />
+                        </a>
+
+                        <a
+                            href="https://facebook.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-gray-700"
+                        >
+                            <FaSquareFacebook size={20} color="#151439" style={{ opacity: 0.4 }} />
+                        </a>
+
+                        <a
+                            href="https://plus.google.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-gray-700"
+                        >
+                            <FaGooglePlusG size={24} color="#151439" style={{ opacity: 0.4 }} />
+                        </a>
                     </div>
                 </div>
 
