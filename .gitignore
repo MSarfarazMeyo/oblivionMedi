@@ -7,6 +7,8 @@ backEnd/node_modules/
 backEnd/dist/
 backEnd/build/
 backEnd/.env
+# Add this to your .gitignore
+backEnd/src/constants/oblivion-media-lp-26f1810d39a1.json
 
 
 
