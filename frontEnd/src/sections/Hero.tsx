@@ -16,7 +16,7 @@ const Hero: React.FC = () => {
           Exclusivity.
         </h2>
 
-        <p className="text-[16px] leading-[28px] text-[#0D0D23]/80 font-medium max-w-[314px] lg:max-w-[570px] text-center lg:text-left">
+        <p className="text-[16px] leading-[28px] text-[#0D0D23]/80 font-medium max-w-[300px] lg:max-w-[570px] text-center lg:text-left">
           We craft smart social media campaigns, design cutting-edge digital
           products, and build high-performing apps and websites. As a private
           agency, we collaborate exclusively with clients who align with our
@@ -24,7 +24,7 @@ const Hero: React.FC = () => {
         </p>
       </div>
 
-      <div className=" w-[310px] h-[405px] mx-auto lg:w-[480px]   lg:mx-0 lg:h-[90%]">
+      <div className=" w-[300px] h-[405px] mx-auto lg:w-[480px]   lg:mx-0 lg:h-[90%]">
         <img
           src={HeroImage}
           alt="Top Right Image"

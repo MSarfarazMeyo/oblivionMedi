@@ -41,7 +41,7 @@ const Navbar: React.FC<NavbarProps> = ({ setPage, page }) => {
   };
 
   return (
-    <nav className="flex items-center justify-between  relative w-[314px] lg:w-full  mx-auto lg:mx-0 ">
+    <nav className="flex items-center justify-between  relative w-[305px] lg:w-full  mx-auto lg:mx-0 ">
       <button
         className="lg:hidden text-gray-600 text-2xl cursor-pointer "
         onClick={() => setMenuOpen(!menuOpen)}

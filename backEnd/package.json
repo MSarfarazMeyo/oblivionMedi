@@ -3,14 +3,17 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "tsc && cd ../frontEnd && npm run build",
-    "start": "node dist/index.js"
+    "build": "tsc &&  npm run copy-config && cd ../frontEnd && npm run build",
+    "copy-config": "mkdir -p ./dist/constants && cp ./src/constants/* ./dist/constants",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@google-cloud/recaptcha-enterprise": "^6.0.1",
     "axios": "^1.8.4",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",

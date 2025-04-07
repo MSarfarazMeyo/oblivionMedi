@@ -1,16 +1,6 @@
-import React, { useState, FormEvent, useEffect, useRef } from 'react';
-
-// Add proper TypeScript declarations
-declare global {
-  interface Window {
-    grecaptcha: {
-      ready: (callback: () => void) => void;
-      render: (container: string | HTMLElement, options: any) => number;
-      execute: (siteKey: string, options: any) => Promise<string>;
-      reset: (widgetId?: number) => void;
-    };
-  }
-}
+import React, { useState, FormEvent, useEffect } from 'react';
+// Notice: We don't use the react-google-recaptcha package for Enterprise implementation
+// import ReCAPTCHA from 'react-google-recaptcha';
 
 interface ContactModalProps {
   open: boolean;
@@ -26,9 +16,7 @@ interface FormData {
 
 const ContactPage: React.FC<ContactModalProps> = ({ open, onClose }) => {
   const API_URL = import.meta.env.VITE_API_URL;
-  const RECAPTCHA_SITE_KEY =
-    import.meta.env.VITE_RECAPTCHA_SITE_KEY ||
-    '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI';
+  const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 
   const [formData, setFormData] = useState<FormData>({
     email: '',
@@ -40,38 +28,53 @@ const ContactPage: React.FC<ContactModalProps> = ({ open, onClose }) => {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState<string | null>(null);
   const [clientIp, setClientIp] = useState<string>('');
-  const [recaptchaToken, setRecaptchaToken] = useState<string>('');
-  const recaptchaRef = useRef<number | null>(null);
-  const recaptchaInitialized = useRef<boolean>(false);
+  const [recaptchaLoaded, setRecaptchaLoaded] = useState(false);
 
+  // Load reCAPTCHA Enterprise script
   useEffect(() => {
-    if (
-      !recaptchaInitialized.current &&
-      window.grecaptcha &&
-      !recaptchaRef.current
-    ) {
-      recaptchaInitialized.current = true;
+    const loadRecaptchaScript = () => {
+      // Create script element for reCAPTCHA Enterprise
+      const script = document.createElement('script');
+      script.src = `https://www.google.com/recaptcha/enterprise.js?render=${RECAPTCHA_SITE_KEY}`;
+      script.async = true;
+      script.defer = true;
+      script.onload = () => setRecaptchaLoaded(true);
 
-      window.grecaptcha.ready(() => {
-        // Make sure the container exists and hasn't been rendered yet
-        const container = document.getElementById('recaptcha-container');
-        if (container && !container.hasChildNodes()) {
-          recaptchaRef.current = window.grecaptcha.render(
-            'recaptcha-container',
-            {
-              sitekey: RECAPTCHA_SITE_KEY,
-              callback: (token: string) => {
-                setRecaptchaToken(token);
-              },
-              'expired-callback': () => {
-                setRecaptchaToken('');
-              },
-            }
-          );
-        }
-      });
+      // Add script to document
+      document.head.appendChild(script);
+
+      return () => {
+        // Cleanup script when component unmounts
+        document.head.removeChild(script);
+      };
+    };
+
+    if (open) {
+      return loadRecaptchaScript();
     }
-  }, []);
+  }, [RECAPTCHA_SITE_KEY, open]);
+
+  // Execute reCAPTCHA when form is about to be submitted
+  const executeRecaptcha = async (): Promise<string> => {
+    if (recaptchaLoaded && window.grecaptcha) {
+      try {
+        const token = await new Promise<string>((resolve, reject) => {
+          window.grecaptcha.enterprise.ready(() => {
+            window.grecaptcha.enterprise
+              .execute(RECAPTCHA_SITE_KEY, { action: 'submit_contact_form' })
+              .then(resolve)
+              .catch(reject);
+          });
+        });
+        return token;
+      } catch (error) {
+        console.error('reCAPTCHA error:', error);
+        throw new Error('Failed to execute reCAPTCHA verification');
+      }
+    } else {
+      throw new Error('reCAPTCHA not loaded');
+    }
+  };
 
   useEffect(() => {
     const fetchIp = async () => {
@@ -118,24 +121,21 @@ const ContactPage: React.FC<ContactModalProps> = ({ open, onClose }) => {
   };
 
   const submitForm = async () => {
-    // Make sure we have a recaptcha token
-    if (!recaptchaToken) {
-      setSubmitError('Please complete the reCAPTCHA verification');
-      return;
-    }
-
     setIsSubmitting(true);
     setSubmitError(null);
     setSubmitSuccess(null);
 
     try {
+      // Execute reCAPTCHA and get token just before submission
+      const token = await executeRecaptcha();
+
       const response = await fetch(`${API_URL}/api/email/send`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
           ip: clientIp,
-          recaptchaToken: recaptchaToken,
+          recaptchaToken: token,
         }),
       });
 
@@ -144,7 +144,7 @@ const ContactPage: React.FC<ContactModalProps> = ({ open, onClose }) => {
         throw new Error(errorData.message || 'Failed to send message');
       }
 
-      // Set success message instead of alert
+      // Set success message
       setSubmitSuccess(
         'Message sent successfully! We will get back to you soon.'
       );
@@ -156,12 +156,6 @@ const ContactPage: React.FC<ContactModalProps> = ({ open, onClose }) => {
         name: '',
         message: '',
       });
-
-      // Reset recaptcha
-      if (recaptchaRef.current && window.grecaptcha) {
-        window.grecaptcha.reset(recaptchaRef.current);
-        setRecaptchaToken('');
-      }
     } catch (error) {
       console.error('Submission error:', error);
       const errorMessage =
@@ -290,7 +284,8 @@ const ContactPage: React.FC<ContactModalProps> = ({ open, onClose }) => {
               />
             </div>
 
-            <div id="recaptcha-container" className="flex max-w-[250px]"></div>
+            {/* No visible reCAPTCHA widget for Enterprise version */}
+            {/* Enterprise reCAPTCHA runs silently in the background */}
 
             {submitError && (
               <div className="text-red-500 text-sm text-center">
@@ -307,9 +302,9 @@ const ContactPage: React.FC<ContactModalProps> = ({ open, onClose }) => {
             <div className="mx-auto w-full flex justify-center">
               <button
                 type="submit"
-                disabled={isSubmitting || !recaptchaToken}
+                disabled={isSubmitting}
                 className={`w-full lg:w-[120px] bg-[#B50B90] text-white py-4 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#1E0E62]/10 ${
-                  isSubmitting || !recaptchaToken
+                  isSubmitting
                     ? 'opacity-70 cursor-not-allowed'
                     : 'hover:bg-purple-700'
                 }`}
@@ -323,5 +318,20 @@ const ContactPage: React.FC<ContactModalProps> = ({ open, onClose }) => {
     </div>
   );
 };
+
+// Add TypeScript interface for the global grecaptcha object
+declare global {
+  interface Window {
+    grecaptcha: {
+      enterprise: {
+        ready: (callback: () => void) => void;
+        execute: (
+          siteKey: string,
+          options: { action: string }
+        ) => Promise<string>;
+      };
+    };
+  }
+}
 
 export default ContactPage;
